@@ -1,0 +1,147 @@
+<!doctype html>
+<!--
+  发布包网页模板（七大区块占位版）。
+  用脚本 scripts/make_publish_kit.py 自动填充即可；本文件也可作为人工改版参考。
+  占位符用 {{ }} 包裹，替换时注意保持结构。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{platform}}·发布包</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#f7f8fa;color:#222;font:15px/1.75 -apple-system,"PingFang SC",sans-serif}
+  .wrap{max-width:900px;margin:0 auto;padding:36px 22px 70px}
+  h1{font-size:26px;margin:0 0 4px}
+  .sub{color:#888;margin:0 0 26px}
+  h2{font-size:19px;margin:32px 0 12px;padding-left:11px;border-left:4px solid {{color}}}
+  .tip{color:#888;font-size:13px;margin:-6px 0 12px}
+  .card{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e6e8eb;border-radius:10px;padding:11px 14px;margin-bottom:9px;flex-wrap:wrap}
+  .card code{color:#222;font-size:15px;word-break:break-all}
+  .len{color:#b08;font-size:12px}
+  .cp{margin-left:auto;background:{{color}};color:#fff;border:0;border-radius:7px;padding:6px 13px;cursor:pointer;font-size:13px}
+  textarea{width:100%;min-height:240px;background:#fff;border:1px solid #e6e8eb;border-radius:10px;padding:14px;font:14px/1.85 ui-monospace,Menlo,"PingFang SC",monospace;resize:vertical}
+  .btn{background:{{color}};color:#fff;border:0;border-radius:9px;padding:9px 20px;font-weight:700;cursor:pointer;margin-top:8px}
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;font-size:14px}
+  th,td{padding:10px 13px;border-bottom:1px solid #eef0f3;text-align:left}
+  th{background:#f2f4f7;color:#555}
+  td.val{font-weight:600}td.ok{color:#16a34a}td.bad{color:#dc2626}
+  ol{list-style:none;padding:0}
+  ol li{background:#fff;border:1px solid #e6e8eb;border-radius:10px;padding:12px 16px;margin-bottom:9px}
+  label{display:flex;gap:10px;align-items:center;cursor:pointer}
+  input[type=checkbox]{width:17px;height:17px;accent-color:{{color}}}
+  .cover{display:flex;gap:18px;align-items:flex-start;background:#fff;border:1px solid #e6e8eb;border-radius:10px;padding:16px}
+  .cover img{width:150px;border-radius:8px;flex:none}
+  .cover p{margin:0;color:#666;font-size:13.5px}
+  .frow{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e6e8eb;border-radius:10px;padding:11px 14px;margin-bottom:9px;flex-wrap:wrap}
+  .fpath{font-family:ui-monospace,Menlo,monospace;font-size:13.5px;word-break:break-all}
+  .warn{background:#fff7f7;border:1px solid #ffd0d0;color:#b3403a;border-radius:10px;padding:12px 16px;margin-top:14px;font-size:13px}
+</style>
+</head>
+<body><div class="wrap">
+  <h1>{{platform}} · 发布包</h1>
+  <p class="sub">{{subject}} · {{orientation}}版 · 一键复制物料</p>
+
+  <h2>① 标题（≤{{title_limit}}字，钩子前置）</h2>
+  <p class="tip">{{title_tip}}</p>
+  <!-- 主推 + 备选，复用一个卡片： <div class="card"><code>标题</code><span class="len">N 字</span><button class="cp" data-copy="1">复制</button></div> -->
+  <div class="card"><code>{{title_main}}</code><span class="len">{{title_len}} 字</span><button class="cp" data-copy="1">复制</button></div>
+
+  <h2>② 正文（≤{{body_limit}}字）</h2>
+  <textarea id="body">{{body}}</textarea>
+  <button class="btn" data-copy-from="body" data-copy="1">复制正文全文</button>
+
+  <h2>③ 话题标签</h2>
+  <div class="card"><code>{{topics}}</code><button class="cp" data-copy="1">复制</button></div>
+
+  <h2>④ 评论区置顶</h2>
+  <textarea id="cmt">{{comment}}</textarea>
+  <button class="btn" data-copy-from="cmt" data-copy="1">复制置顶文案</button>
+
+  <h2>⑤ 封面</h2>
+  <div class="cover"><img src="{{cover_data_uri}}">
+    <p><b>{{cover_file}}</b><br>要求：{{cover_req}}<br><br>{{cover_desc}}</p></div>
+
+  <h2>⑥ 规格核对（本片 vs 平台要求）</h2>
+  <table><tr><th>项目</th><th>本片</th><th>平台要求</th><th>结论</th></tr>{{spec_rows}}</table>
+  <div class="warn"><b>上传前请以平台官方最新要求为准</b>；封面务必选「自定义」，勿用系统截帧；发布不可逆，预览无误再点发布。</div>
+
+  <h2>⑦ 发布步骤（可勾选）</h2>
+  <ol>{{steps_html}}</ol>
+
+  <h2>⑧ 文件位置（Cmd+Shift+G 可粘贴路径）</h2>
+  <div class="frow"><code class="fpath">{{video_path}}</code><button class="cp" data-copy="1">复制</button></div>
+  <div class="frow"><code class="fpath">{{cover_path}}</code><button class="cp" data-copy="1">复制</button></div>
+  <p class="tip">发布入口：{{entry}}</p>
+</div>
+<script data-copy-bind="1">
+(function(){
+  function srcText(btn){
+    var id=btn.getAttribute('data-copy-from');
+    if(id){var el=document.getElementById(id);
+      if(el)return (typeof el.value==='string')?el.value:el.textContent;}
+    var box=btn.closest?btn.closest('.card,.frow'):null;
+    if(box){var c=box.querySelector('code');if(c)return c.textContent;}
+    return '';
+  }
+  function flash(btn,ok,msg){
+    if(btn._cpTimer)clearTimeout(btn._cpTimer);
+    if(btn._cpOld===undefined)btn._cpOld=btn.textContent;
+    btn.textContent=ok?'✓ 已复制':(msg||'复制失败');
+    btn.style.background=ok?'#16a34a':'#dc2626';
+    btn.style.color='#fff';
+    btn._cpTimer=setTimeout(function(){
+      btn.textContent=btn._cpOld;btn.style.background='';btn.style.color='';
+    },1800);
+  }
+  function fallback(text){
+    var x=document.createElement('textarea');
+    x.value=text;x.setAttribute('readonly','');
+    x.style.position='fixed';x.style.top='0';x.style.left='-9999px';
+    document.body.appendChild(x);
+    if(x.select){x.select();try{x.setSelectionRange(0,text.length);}catch(e){}}
+    var ok=false;
+    try{ok=!!document.execCommand('copy');}catch(e){ok=false;}
+    document.body.removeChild(x);
+    return ok;
+  }
+  function selectSource(btn){
+    var box=btn.closest?btn.closest('.card,.frow'):null;
+    var c=box?box.querySelector('code'):null;
+    if(c&&window.getSelection&&document.createRange){
+      try{var r=document.createRange();r.selectNodeContents(c);
+        var s=window.getSelection();s.removeAllRanges();s.addRange(r);}catch(e){}
+    }else{
+      var id=btn.getAttribute('data-copy-from');
+      var el=id?document.getElementById(id):null;
+      if(el&&el.focus){el.focus();if(el.select)el.select();}
+    }
+  }
+  function copy(btn){
+    var t=srcText(btn);
+    if(!t){flash(btn,false,'空内容');return;}
+    var ok=function(){flash(btn,true);};
+    var ng=function(){
+      if(fallback(t)){ok();}
+      else{flash(btn,false,'请手动复制');selectSource(btn);}
+    };
+    var can=!!(navigator.clipboard&&navigator.clipboard.writeText&&
+               (window.isSecureContext||location.protocol==='file:'));
+    if(can){try{navigator.clipboard.writeText(t).then(ok,ng);}catch(e){ng();}}
+    else{ng();}
+  }
+  document.addEventListener('click',function(e){
+    var el=e.target;
+    while(el&&el!==document&&!(el.tagName==='BUTTON'&&el.hasAttribute('data-copy'))){
+      el=el.parentNode;
+    }
+    if(el&&el.tagName==='BUTTON')copy(el);
+  },false);
+})();
+</script>
+<script>
+document.querySelectorAll('input[type=checkbox]').forEach(c=>{if(localStorage.getItem(c.dataset.k)==='1')c.checked=true;
+c.addEventListener('change',()=>localStorage.setItem(c.dataset.k,c.checked?'1':'0'));});
+</script>
+</body></html>
